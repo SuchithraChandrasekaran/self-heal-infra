@@ -1,0 +1,2 @@
+# Copy this file to terraform.tfvars (which is gitignored) and fill in your own email
+admin_email = "you@example.com"
