@@ -6,3 +6,8 @@ output "api_url" {
 output "lambda_function_name" {
   value = aws_lambda_function.toy_service.function_name
 }
+
+output "chaos_toggle_url" {
+  description = "POST here to flip the chaos flag between healthy and degraded"
+  value       = "${aws_apigatewayv2_stage.toy_service_stage.invoke_url}/chaos"
+}
