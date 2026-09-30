@@ -1,0 +1,129 @@
+{
+  "Comment": "Self-Heal Infra: detect, diagnose, approve, remediate, verify, log",
+  "StartAt": "CheckCooldown",
+  "States": {
+    "CheckCooldown": {
+      "Type": "Task",
+      "Resource": "${cooldown_gate_arn}",
+      "ResultPath": "$.cooldown",
+      "Next": "CooldownChoice"
+    },
+    "CooldownChoice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.cooldown.in_cooldown",
+          "BooleanEquals": true,
+          "Next": "SkippedCooldown"
+        }
+      ],
+      "Default": "Diagnose"
+    },
+    "SkippedCooldown": {
+      "Type": "Succeed"
+    },
+    "Diagnose": {
+      "Type": "Task",
+      "Resource": "${diagnose_arn}",
+      "ResultPath": "$.diagnosis",
+      "Next": "ApprovalGate"
+    },
+    "ApprovalGate": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.diagnosis.confidence",
+          "NumericGreaterThanEquals": ${confidence_threshold},
+          "Next": "InitRetryCount"
+        }
+      ],
+      "Default": "NeedsHuman"
+    },
+    "InitRetryCount": {
+      "Type": "Pass",
+      "Result": 0,
+      "ResultPath": "$.retryCount",
+      "Next": "Remediate"
+    },
+    "Remediate": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:putItem",
+      "Parameters": {
+        "TableName": "${failure_mode_table_name}",
+        "Item": {
+          "id": { "S": "current" },
+          "mode": { "S": "healthy" }
+        }
+      },
+      "ResultPath": null,
+      "Next": "Verify"
+    },
+    "Verify": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:getItem",
+      "Parameters": {
+        "TableName": "${failure_mode_table_name}",
+        "Key": {
+          "id": { "S": "current" }
+        }
+      },
+      "ResultPath": "$.verifyResult",
+      "Next": "VerifyChoice"
+    },
+    "VerifyChoice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.verifyResult.Item.mode.S",
+          "StringEquals": "healthy",
+          "Next": "LogResolved"
+        }
+      ],
+      "Default": "IncrementRetry"
+    },
+    "IncrementRetry": {
+      "Type": "Pass",
+      "Parameters": {
+        "value.$": "States.MathAdd($.retryCount, 1)"
+      },
+      "ResultPath": "$.retryCountWrap",
+      "Next": "ApplyRetryCount"
+    },
+    "ApplyRetryCount": {
+      "Type": "Pass",
+      "InputPath": "$.retryCountWrap.value",
+      "ResultPath": "$.retryCount",
+      "Next": "RetryChoice"
+    },
+    "RetryChoice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.retryCount",
+          "NumericLessThan": ${max_retries},
+          "Next": "Remediate"
+        }
+      ],
+      "Default": "NeedsHuman"
+    },
+    "LogResolved": {
+      "Type": "Task",
+      "Resource": "${log_outcome_arn}",
+      "Parameters": {
+        "status": "resolved",
+        "diagnosis.$": "$.diagnosis",
+        "retryCount.$": "$.retryCount"
+      },
+      "End": true
+    },
+    "NeedsHuman": {
+      "Type": "Task",
+      "Resource": "${log_outcome_arn}",
+      "Parameters": {
+        "status": "needs_human",
+        "diagnosis.$": "$.diagnosis"
+      },
+      "End": true
+    }
+  }
+}

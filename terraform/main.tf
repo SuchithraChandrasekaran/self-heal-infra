@@ -44,3 +44,10 @@ resource "aws_budgets_budget" "cost_guardrail" {
 module "toy_service" {
   source = "./modules/toy_service"
 }
+
+module "orchestration" {
+  source                  = "./modules/orchestration"
+  toy_alarm_arn           = module.toy_service.alarm_arn
+  failure_mode_table_name = module.toy_service.failure_mode_table_name
+  failure_mode_table_arn  = module.toy_service.failure_mode_table_arn
+}

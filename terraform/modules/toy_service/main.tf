@@ -176,7 +176,9 @@ resource "aws_lambda_permission" "allow_apigw" {
   source_arn    = "${aws_apigatewayv2_api.toy_service_api.execution_arn}/*/*"
 }
 
-# --- Detection: CloudWatch alarm + EventBridge (Day 2) ---
+# --- Detection: CloudWatch alarm (Day 2). EventBridge now lives in the
+# orchestration module, pointed at this alarm's ARN, and triggers the real
+# Step Functions pipeline instead of a placeholder Lambda (Day 3). ---
 
 resource "aws_cloudwatch_metric_alarm" "toy_service_errors" {
   alarm_name          = "selfheal-toy-service-errors"
@@ -193,68 +195,4 @@ resource "aws_cloudwatch_metric_alarm" "toy_service_errors" {
     ApiId = aws_apigatewayv2_api.toy_service_api.id
     Stage = aws_apigatewayv2_stage.toy_service_stage.name
   }
-}
-
-data "archive_file" "detector_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/detector_src"
-  output_path = "${path.module}/detector_src.zip"
-}
-
-resource "aws_iam_role" "detector_role" {
-  name = "selfheal-detector-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action    = "sts:AssumeRole"
-      Effect    = "Allow"
-      Principal = { Service = "lambda.amazonaws.com" }
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "detector_logs" {
-  role       = aws_iam_role.detector_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_lambda_function" "detector" {
-  function_name    = "selfheal-detector-placeholder"
-  role             = aws_iam_role.detector_role.arn
-  handler          = "handler.handler"
-  runtime          = "python3.12"
-  filename         = data.archive_file.detector_zip.output_path
-  source_code_hash = data.archive_file.detector_zip.output_base64sha256
-  timeout          = 10
-  memory_size      = 128
-}
-
-resource "aws_cloudwatch_event_rule" "toy_service_alarm_rule" {
-  name        = "selfheal-toy-service-alarm-rule"
-  description = "Fires when the toy service error alarm changes to ALARM state"
-
-  event_pattern = jsonencode({
-    source      = ["aws.cloudwatch"]
-    detail-type = ["CloudWatch Alarm State Change"]
-    resources   = [aws_cloudwatch_metric_alarm.toy_service_errors.arn]
-    detail = {
-      state = {
-        value = ["ALARM"]
-      }
-    }
-  })
-}
-
-resource "aws_cloudwatch_event_target" "detector_target" {
-  rule = aws_cloudwatch_event_rule.toy_service_alarm_rule.name
-  arn  = aws_lambda_function.detector.arn
-}
-
-resource "aws_lambda_permission" "allow_eventbridge" {
-  statement_id  = "AllowEventBridgeInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.detector.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.toy_service_alarm_rule.arn
 }

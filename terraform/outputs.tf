@@ -7,3 +7,8 @@ output "chaos_toggle_url" {
   description = "POST here to flip the chaos flag between healthy and degraded"
   value       = module.toy_service.chaos_toggle_url
 }
+
+output "state_machine_arn" {
+  description = "ARN of the Step Functions pipeline - use this to check execution history in the console"
+  value       = module.orchestration.state_machine_arn
+}
