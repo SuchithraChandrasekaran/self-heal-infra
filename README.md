@@ -1,12 +1,14 @@
 # Self-Heal Infra
 
-Self-Heal Infra is a small AWS project that detects a failing service, runs it through an automated decision pipeline, and fixes it — without involving a human.
+Self-Heal Infra is the Infra that detects a failing service, runs it through an automated decision pipeline, and fixes it — without involving a human.
 
 Built for the AWS Zero to Shipped Hackathon (September 18 – October 2, 2026).
 
 ## The problem
 
-A lot of incidents follow the same shape: something breaks in a predictable way, an engineer gets paged, they recognize the pattern, and apply a fix they've applied before. That response doesn't need to wait for a person to wake up. This project automates it for one specific, deliberately simple class of failure, end to end, and logs its reasoning while it does it.
+Most incidents follow a pattern. Something breaks the same way, an on-call engineer is alerted, they recognize the cause, and they apply a fix they've used before. That fix doesn't need a human to wake up for it.
+
+This project automates that response for one simple class of failure, from detection to fix, and logs its reasoning at every step.
 
 ## What it does
 
