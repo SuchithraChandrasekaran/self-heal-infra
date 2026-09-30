@@ -60,6 +60,11 @@ Not used, despite earlier drafts of this README claiming otherwise: Amazon Bedro
 - **Category:** Workplace Efficiency
 - **Track:** Startup
 
+## Demo
+
+Demo video: https://www.youtube.com/watch?v=VT1gH7sOQRU
+
+
 ## Cost
 
 Runs on AWS's free tier at this demo's scale: Lambda, DynamoDB, EventBridge, Step Functions, API Gateway, and CloudWatch. Cost to run: effectively $0.
