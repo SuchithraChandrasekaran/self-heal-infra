@@ -14,6 +14,8 @@ This project automates that response for one simple class of failure, from detec
 
 The project runs a small demo service that can be pushed into a failing state on demand, using a chaos toggle. When it fails, a Step Functions pipeline detects it, runs a diagnosis step, checks a confidence threshold, applies a fix, and verifies the fix worked. It's been run and confirmed working twice, independently — the service returns to healthy on its own, with no manual intervention after the initial chaos trigger.
 
+![self-heal-infra](./docs/self-heal-infra-architecture.jpg)
+
 ## How it actually works
 
 1. **Toy service** — a Lambda behind API Gateway (`GET /health`). A second Lambda (`POST /chaos`) flips a DynamoDB flag that the toy service checks; when the flag is set, it returns a simulated failure.
@@ -63,6 +65,8 @@ Not used, despite earlier drafts of this README claiming otherwise: Amazon Bedro
 ## Demo
 
 Demo video: https://www.youtube.com/watch?v=VT1gH7sOQRU
+
+AWS Builder Community : https://builder.aws.com/project/3K3biDUDJXgERAh0YpmdNwPsaav/self-heal-infra
 
 
 ## Cost
