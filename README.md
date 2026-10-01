@@ -1,6 +1,6 @@
 # Self-Heal Infra
 
-Self-Heal Infra is the Infra that detects a failing service, runs it through an automated decision pipeline, and fixes it — without involving a human.
+Self-Heal Infra detects a failing service, runs it through an automated decision pipeline, and fixes it — without involving a human.
 
 Built for the AWS Zero to Shipped Hackathon (September 18 – October 2, 2026).
 
@@ -48,7 +48,6 @@ self-heal-infra/
 
 AWS Lambda, API Gateway (HTTP API), DynamoDB, CloudWatch (alarms), EventBridge, Step Functions, Terraform, deployed and applied manually via the AWS CLI.
 
-Not used, despite earlier drafts of this README claiming otherwise: Amazon Bedrock, AWS X-Ray, Grafana, GitHub Actions/CI-CD, S3-hosted frontend. None of these are part of the current build.
 
 ## Safety measures that are actually implemented
 
@@ -62,12 +61,15 @@ Not used, despite earlier drafts of this README claiming otherwise: Amazon Bedro
 - **Category:** Workplace Efficiency
 - **Track:** Startup
 
+## Proof of coding agent use
+
+See [`docs/agent-connection-proof.md`](./docs/agent-connection-proof.md) for documented proof of the coding agent connecting to AWS and running verified CLI commands (`aws sts get-caller-identity` and `aws lambda list-functions`), with screenshots.
+
 ## Demo
 
-Demo video: https://www.youtube.com/watch?v=VT1gH7sOQRU
-
-AWS Builder Community : https://builder.aws.com/project/3K3biDUDJXgERAh0YpmdNwPsaav/self-heal-infra
-
+- **Live app:** https://m1rtg9glk3.execute-api.us-east-1.amazonaws.com/health
+- **Demo video:** https://www.youtube.com/watch?v=VT1gH7sOQRU
+- **AWS Builder Community project:** https://builder.aws.com/project/3K3biDUDJXgERAh0YpmdNwPsaav/self-heal-infra
 
 ## Cost
 
